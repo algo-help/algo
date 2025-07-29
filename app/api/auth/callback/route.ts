@@ -7,6 +7,8 @@ import { cookies } from 'next/headers';
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
+  const debugInfo: any[] = [];
+  debugInfo.push('🔹 OAuth callback started');
   console.log('🔹 OAuth callback started');
   
   // Dynamic server usage를 피하기 위해 headers 사용
@@ -88,8 +90,8 @@ export async function GET(request: Request) {
       
       console.log('🔹 User lookup result (regular client):', { userData, userError, email: user.email, errorCode: userError?.code });
       
-      // 권한 문제로 실패한 경우 admin 클라이언트 시도
-      if (userError && (userError.code === 'PGRST301' || userError.message?.includes('permission'))) {
+      // 사용자 조회 실패 시 admin 클라이언트로 재시도 (RLS, 권한 문제 등)
+      if (userError) {
         console.log('🔹 Trying with admin client due to RLS restriction...');
         try {
           const adminSupabase = createAdminClient();
