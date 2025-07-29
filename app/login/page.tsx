@@ -30,9 +30,16 @@ export default function LoginPage() {
   const searchParams = useSearchParams();
   
   useEffect(() => {
+    console.log('🔹 LoginPage mounted');
+    console.log('🔹 Environment check:', {
+      supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
+      supabaseAnonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'Present' : 'Missing'
+    });
+    
     // URL 파라미터에서 에러 메시지 확인
     const errorParam = searchParams?.get('error');
     if (errorParam) {
+      console.log('🔹 Error parameter found:', errorParam);
       if (errorParam.includes('domains are allowed')) {
         setError('@algocarelab.com 또는 @algocare.me 도메인의 계정만 허용됩니다.');
       } else if (errorParam === 'Account is deactivated') {
@@ -69,11 +76,14 @@ export default function LoginPage() {
   };
 
   const handleGoogleLogin = async () => {
+    console.log('🔹 Button clicked - handleGoogleLogin called!');
     setError(null);
     setIsLoading(true);
     
     try {
+      console.log('🔹 Creating Supabase client...');
       const supabase = createClient();
+      console.log('🔹 Supabase client created:', !!supabase);
       
       console.log('🔹 Starting Google OAuth login...');
       console.log('🔹 Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
@@ -134,7 +144,10 @@ export default function LoginPage() {
             type="button"
             variant="outline"
             className="w-full h-[54px]"
-            onClick={handleGoogleLogin}
+            onClick={(e) => {
+              console.log('🔹 Button onClick triggered!', e);
+              handleGoogleLogin();
+            }}
             disabled={isLoading}
           >
             <svg className="mr-2 w-4 h-4" viewBox="0 0 24 24">
