@@ -94,13 +94,34 @@ export async function GET(request: Request) {
       
       try {
         const adminSupabase = createAdminClient();
-        const adminResult = await adminSupabase
+        
+        // 먼저 auth_id로 검색 시도
+        let authIdResult = await adminSupabase
           .from('users')
-          .select('id, email, role, is_active, password_hash, created_at, avatar_url')
-          .eq('email', user.email)
+          .select('id, email, role, is_active, password_hash, created_at, avatar_url, auth_id')
+          .eq('auth_id', user.id)
           .single();
-        userData = adminResult.data;
-        userError = adminResult.error;
+        
+        console.log('🔹 Auth ID lookup result:', { hasData: !!authIdResult.data, hasError: !!authIdResult.error, errorCode: authIdResult.error?.code });
+        
+        if (authIdResult.data && !authIdResult.error) {
+          // auth_id로 찾은 경우
+          userData = authIdResult.data;
+          userError = null;
+          console.log('🔹 User found by auth_id:', { userId: userData.id, email: userData.email });
+        } else {
+          // auth_id로 찾지 못한 경우 이메일로 검색
+          const emailResult = await adminSupabase
+            .from('users')
+            .select('id, email, role, is_active, password_hash, created_at, avatar_url, auth_id')
+            .eq('email', user.email)
+            .single();
+          
+          console.log('🔹 Email lookup result:', { hasData: !!emailResult.data, hasError: !!emailResult.error, errorCode: emailResult.error?.code });
+          
+          userData = emailResult.data;
+          userError = emailResult.error;
+        }
       } catch (adminError) {
         console.error('🔹 Admin client creation failed:', adminError);
         userError = { message: `Admin client error: ${adminError}`, code: 'ADMIN_CLIENT_ERROR' };
