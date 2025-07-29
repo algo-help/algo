@@ -7,7 +7,7 @@ import { cookies } from 'next/headers';
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
-  // console.log('🔹 OAuth callback started');
+  console.log('🔹 OAuth callback started');
   
   // Dynamic server usage를 피하기 위해 headers 사용
   const host = request.headers.get('host');
@@ -18,7 +18,7 @@ export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get('code');
   
-  // console.log('🔹 Request details:', { code: !!code, origin });
+  console.log('🔹 Request details:', { code: !!code, origin });
   
   // 환경별 도메인 확인
   const isProduction = process.env.NODE_ENV === 'production';
@@ -27,8 +27,8 @@ export async function GET(request: Request) {
   // 프로덕션 환경에서 올바른 도메인 사용 확인
   let redirectOrigin = origin;
   if (isProduction && isVercel) {
-    // Vercel 배포 환경에서는 https://supabase-supplement-delivery.vercel.app 사용
-    redirectOrigin = 'https://supabase-supplement-delivery.vercel.app';
+    // Vercel 배포 환경에서는 https://algo-topaz.vercel.app 사용
+    redirectOrigin = 'https://algo-topaz.vercel.app';
   }
   
   // console.log('🔹 OAuth callback - Origin:', origin, 'Redirect Origin:', redirectOrigin, 'Is Production:', isProduction);
@@ -53,12 +53,12 @@ export async function GET(request: Request) {
     
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
-    // console.log('🔹 Session exchange result:', { 
-    //   hasData: !!data, 
-    //   hasError: !!error, 
-    //   hasSession: !!data?.session,
-    //   errorMessage: error?.message 
-    // });
+    console.log('🔹 Session exchange result:', { 
+      hasData: !!data, 
+      hasError: !!error, 
+      hasSession: !!data?.session,
+      errorMessage: error?.message 
+    });
 
     if (!error && data.session) {
       // Supabase 세션이 성공적으로 생성되었습니다
@@ -204,11 +204,11 @@ export async function GET(request: Request) {
             avatar_url: avatarUrl // 랜덤 아바타 추가
           });
           
-        // console.log('🔹 Insert attempt (regular client):', { hasError: !!insertError, errorCode: insertError?.code, errorMessage: insertError?.message });
+        console.log('🔹 Insert attempt (regular client):', { hasError: !!insertError, errorCode: insertError?.code, errorMessage: insertError?.message });
           
         // 권한 문제로 실패한 경우 admin 클라이언트 시도
         if (insertError && (insertError.code === 'PGRST301' || insertError.message?.includes('permission'))) {
-          // console.log('🔹 Trying user creation with admin client...');
+          console.log('🔹 Trying user creation with admin client...');
           try {
             const adminSupabase = createAdminClient();
             const adminInsertResult = await adminSupabase
@@ -222,17 +222,19 @@ export async function GET(request: Request) {
                 avatar_url: avatarUrl // 랜덤 아바타 추가
               });
             insertError = adminInsertResult.error;
-            // console.log('🔹 Insert attempt (admin client):', { hasError: !!insertError, errorCode: insertError?.code, errorMessage: insertError?.message });
+            console.log('🔹 Insert attempt (admin client):', { hasError: !!insertError, errorCode: insertError?.code, errorMessage: insertError?.message });
           } catch (adminError) {
             // console.error('🔹 Admin client creation failed during insert:', adminError);
           }
         }
           
         if (insertError) {
-          // console.error('🔹 Final user creation error:', insertError);
-          // 사용자 생성 실패 시에도 임시로 진행하되 로그를 남김
+          console.error('🔹 Final user creation error:', insertError);
+          console.error('🔹 Error details:', { code: insertError.code, message: insertError.message, details: insertError.details });
+          // 사용자 생성이 실패했지만 리다이렉트 에러로 표시되지 않도록 에러 메시지 반환
+          return NextResponse.redirect(`${redirectOrigin}/login?error=Database error saving new user: ${insertError.message}`);
         } else {
-          // console.log('🔹 New user created successfully:', user.email);
+          console.log('🔹 New user created successfully:', user.email);
         }
         
         // 새 사용자는 승인 대기 페이지로 리다이렉트
