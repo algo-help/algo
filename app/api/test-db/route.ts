@@ -21,12 +21,11 @@ export async function GET() {
     console.log('🔹 Admin client created successfully');
     
     // 간단한 쿼리 테스트
-    const { data, error } = await adminSupabase
+    const { count, error } = await adminSupabase
       .from('users')
-      .select('count(*)')
-      .limit(1);
+      .select('*', { count: 'exact', head: true });
       
-    console.log('🔹 Query result:', { data, error });
+    console.log('🔹 Query result:', { count, error });
     
     if (error) {
       return NextResponse.json({ 
@@ -39,7 +38,7 @@ export async function GET() {
     return NextResponse.json({ 
       success: true, 
       message: 'Database connection successful',
-      userCount: data?.[0]?.count || 0
+      userCount: count || 0
     });
     
   } catch (err) {
