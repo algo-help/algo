@@ -188,11 +188,27 @@ export async function GET(request: Request) {
       } else {
         // 새 사용자 - 자동으로 생성 (승인 대기 상태)
         console.log('🔹 New user detected, attempting to create user record');
+        console.log('🔹 User data from Google OAuth:', { 
+          id: user.id, 
+          email: user.email, 
+          provider: 'google',
+          userMetadata: user.user_metadata,
+          appMetadata: user.app_metadata 
+        });
         
         // 랜덤 아바타 URL 생성
         const avatarSeed = Math.random().toString(36).substring(2, 15);
         const avatarGender = Math.random() > 0.5 ? 'male' : 'female';
         const avatarUrl = `https://api.dicebear.com/7.x/lorelei/svg?seed=${avatarSeed}&gender=${avatarGender}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf`;
+        
+        console.log('🔹 Attempting to insert user with data:', {
+          id: user.id,
+          email: user.email,
+          password_hash: 'oauth_user',
+          role: 'v',
+          is_active: false,
+          avatar_url: avatarUrl
+        });
         
         // 먼저 기본 클라이언트로 시도 - Supabase Auth ID를 그대로 사용
         let { error: insertError } = await supabase
