@@ -75,6 +75,10 @@ export default function LoginPage() {
     try {
       const supabase = createClient();
       
+      console.log('🔹 Starting Google OAuth login...');
+      console.log('🔹 Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
+      console.log('🔹 Redirect URL:', `${window.location.origin}/api/auth/callback`);
+      
       // 클라이언트 사이드에서 직접 OAuth 처리
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -88,15 +92,17 @@ export default function LoginPage() {
         }
       });
 
+      console.log('🔹 OAuth result:', { data, error });
+
       if (error) {
-        // console.error('OAuth error:', error);
-        setError('Google 로그인 중 오류가 발생했습니다.');
+        console.error('🔹 OAuth error details:', error);
+        setError(`Google 로그인 오류: ${error.message}`);
         setIsLoading(false);
       }
       // 성공 시 자동으로 리다이렉트됨
     } catch (err) {
-      // console.error('OAuth catch error:', err);
-      setError('Google 로그인 중 오류가 발생했습니다.');
+      console.error('🔹 OAuth catch error:', err);
+      setError(`Google 로그인 예외: ${err instanceof Error ? err.message : 'Unknown error'}`);
       setIsLoading(false);
     }
   };
