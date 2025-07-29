@@ -86,11 +86,11 @@ export async function GET(request: Request) {
         .eq('email', user.email)
         .single();
       
-      // console.log('🔹 User lookup result (regular client):', { userData, userError, email: user.email, errorCode: userError?.code });
+      console.log('🔹 User lookup result (regular client):', { userData, userError, email: user.email, errorCode: userError?.code });
       
       // 권한 문제로 실패한 경우 admin 클라이언트 시도
       if (userError && (userError.code === 'PGRST301' || userError.message?.includes('permission'))) {
-        // console.log('🔹 Trying with admin client due to RLS restriction...');
+        console.log('🔹 Trying with admin client due to RLS restriction...');
         try {
           const adminSupabase = createAdminClient();
           const adminResult = await adminSupabase
@@ -100,9 +100,9 @@ export async function GET(request: Request) {
             .single();
           userData = adminResult.data;
           userError = adminResult.error;
-          // console.log('🔹 User lookup result (admin client):', { userData, userError, errorCode: userError?.code });
+          console.log('🔹 User lookup result (admin client):', { userData, userError, errorCode: userError?.code });
         } catch (adminError) {
-          // console.error('🔹 Admin client creation failed:', adminError);
+          console.error('🔹 Admin client creation failed:', adminError);
         }
       }
 
@@ -111,18 +111,18 @@ export async function GET(request: Request) {
       
       if (userData && !userError) {
         // 기존 사용자
-        // console.log('🔹 Existing user found:', { 
-        //   role: userData.role, 
-        //   isActive: userData.is_active, 
-        //   dbId: userData.id,
-        //   authId: user.id,
-        //   idsMatch: userData.id === user.id 
-        // });
+        console.log('🔹 Existing user found:', { 
+          role: userData.role, 
+          isActive: userData.is_active, 
+          dbId: userData.id,
+          authId: user.id,
+          idsMatch: userData.id === user.id 
+        });
         
         // ID 불일치 감지 (기존 OAuth 사용자)
         if (userData.id !== user.id) {
-          // console.log('🔹 ID mismatch detected! This is a legacy OAuth user.');
-          // console.log('🔹 Updating user ID to match Auth ID...');
+          console.log('🔹 ID mismatch detected! This is a legacy OAuth user.');
+          console.log('🔹 Updating user ID to match Auth ID...');
           
           // Admin 클라이언트로 ID 업데이트 시도
           try {
@@ -185,7 +185,7 @@ export async function GET(request: Request) {
         isActive = userData.is_active;
       } else {
         // 새 사용자 - 자동으로 생성 (승인 대기 상태)
-        // console.log('🔹 New user detected, attempting to create user record');
+        console.log('🔹 New user detected, attempting to create user record');
         
         // 랜덤 아바타 URL 생성
         const avatarSeed = Math.random().toString(36).substring(2, 15);
