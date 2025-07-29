@@ -1,0 +1,14 @@
+User-agent: *
+Disallow: /
+
+User-agent: Googlebot
+Disallow: /
+
+User-agent: Yeti
+Disallow: /
+
+User-agent: Baiduspider
+Disallow: /
+
+User-agent: bingbot
+Disallow: /

@@ -1,0 +1,481 @@
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 246 79% 60%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 5.9% 96.1%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 5.9% 96.1%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 5.9% 96.1%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 72.2% 50.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 246 79% 60%;
+    --radius: 0.5rem;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+    
+    /* Custom legacy colors for backward compatibility */
+    --foreground-rgb: 0, 0, 0;
+    --background-start-rgb: 248, 250, 252;
+    --background-end-rgb: 241, 245, 249;
+    --primary-color: #4f46e5;
+    --primary-hover: #4338ca;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --error-color: #ef4444;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+    
+    /* 실시간 키보드 동기화를 위한 변수 */
+    --keyboard-height: 0px;
+    --viewport-height: 100vh;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 246 79% 60%;
+    --primary-foreground: 240 5.9% 10%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 246 79% 60%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+}
+
+@layer components {
+  /* 테이블 셀 공통 스타일 */
+  .table-cell-center {
+    @apply text-center px-0.5 sm:px-3 py-1.5 sm:py-4 text-xs sm:text-sm whitespace-nowrap;
+  }
+  
+  /* 스크롤바 너비 계산을 위한 CSS 변수 */
+  :root {
+    --scrollbar-width: 0px;
+  }
+  
+  html {
+    /* 스크롤바 항상 표시하여 레이아웃 시프트 방지 */
+    overflow-y: scroll;
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+  }
+  
+  /* macOS/모바일 스타일 스크롤바 */
+  @supports (scrollbar-width: thin) {
+    html {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(0, 0, 0, 0.3) transparent;
+    }
+  }
+  
+  /* Webkit 브라우저용 스크롤바 스타일 */
+  html::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  
+  html::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  html::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  
+  html::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+  
+  /* 다크모드 스크롤바 */
+  .dark html::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.3);
+  }
+  
+  .dark html::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.5);
+  }
+  
+  /* 스크롤바 gutter를 사용한 레이아웃 안정화 */
+  .stable-layout {
+    scrollbar-gutter: stable;
+  }
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+    to bottom,
+    rgb(var(--background-start-rgb)),
+    rgb(var(--background-end-rgb))
+  );
+  min-height: 100vh;
+}
+
+/* 애니메이션 및 트랜지션 */
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.shimmer {
+  background: linear-gradient(110deg, transparent 40%, rgba(255, 255, 255, 0.6) 50%, transparent 60%);
+  background-size: 300% 100%;
+  animation: shimmer 3s linear infinite;
+}
+
+/* 시스템 기본 오버레이 스크롤바 사용 */
+
+.card {
+  @apply bg-white rounded-lg shadow-md overflow-hidden border border-gray-200;
+}
+
+.badge {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+}
+
+.badge-success {
+  @apply bg-green-100 text-green-800;
+}
+
+.badge-warning {
+  @apply bg-yellow-100 text-yellow-800;
+}
+
+.badge-pending {
+  @apply bg-blue-100 text-blue-800;
+}
+
+.btn {
+  @apply px-4 py-2 rounded-md font-medium transition-colors duration-200;
+}
+
+.btn-primary {
+  @apply bg-indigo-600 text-white hover:bg-indigo-700;
+}
+
+.btn-secondary {
+  @apply bg-white text-gray-700 border border-gray-300 hover:bg-gray-50;
+}
+
+.btn-sm {
+  @apply px-3 py-1.5 text-sm;
+}
+
+.table-container {
+  @apply overflow-x-auto overflow-y-hidden rounded-lg shadow-sm;
+}
+
+.dashboard-table {
+  @apply min-w-full divide-y divide-gray-200;
+}
+
+.dashboard-table thead {
+  @apply bg-gray-50;
+}
+
+.dashboard-table th {
+  @apply px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider;
+}
+
+.dashboard-table tbody {
+  @apply bg-white divide-y divide-gray-200;
+}
+
+.dashboard-table td {
+  @apply px-6 py-4 whitespace-nowrap text-sm text-gray-500;
+}
+
+.dashboard-table tr:hover {
+  @apply bg-gray-50 transition-colors duration-150;
+}
+
+.loading-spinner {
+  @apply animate-spin h-5 w-5 text-indigo-600;
+}
+
+.page-header {
+  @apply mb-8 flex justify-between items-center;
+}
+
+.status-badge {
+  @apply inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium;
+}
+
+.status-badge-delivered {
+  @apply bg-green-100 text-green-800;
+}
+
+.status-badge-pending {
+  @apply bg-yellow-100 text-yellow-800;
+}
+
+.filter-panel {
+  @apply bg-white p-4 rounded-lg shadow-sm border border-gray-200 my-4 transition-all duration-200;
+}
+
+.filter-panel-hidden {
+  @apply hidden;
+}
+
+.form-group {
+  @apply mb-4;
+}
+
+.form-label {
+  @apply block text-sm font-medium text-gray-700 mb-1;
+}
+
+.form-control {
+  @apply block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm;
+}
+
+.form-select {
+  @apply block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm;
+}
+
+.chip {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 mr-2 mb-2;
+}
+
+.chip-active {
+  @apply bg-indigo-100 text-indigo-800;
+}
+
+/* 모바일 키보드 대응 */
+@media (max-width: 640px) {
+  /* 키보드가 열렸을 때만 적용되는 클래스 */
+  body.keyboard-open [data-radix-dialog-content] {
+    max-height: 60vh !important;
+    height: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  
+  body.keyboard-open .mobile-scroll-content {
+    max-height: 30vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    flex: 1;
+  }
+  
+  body.keyboard-open .modal-footer {
+    position: fixed !important;
+    bottom: var(--keyboard-height, 0px) !important;
+    left: 0 !important;
+    right: 0 !important;
+    background: white !important;
+    z-index: 50 !important;
+    border-top: 1px solid hsl(var(--border)) !important;
+    padding: 16px 24px !important;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1) !important;
+    /* 하드웨어 가속과 빠른 애니메이션을 위한 속성 */
+    -webkit-transform: translateZ(0) !important;
+    -webkit-backface-visibility: hidden !important;
+    -webkit-perspective: 1000 !important;
+    transform: translateZ(0) !important;
+    backface-visibility: hidden !important;
+    perspective: 1000 !important;
+    /* 빠른 트랜지션 설정 */
+    transition: bottom 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+    -webkit-transition: bottom 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+  }
+  
+  /* 기본 상태에서는 전체 화면 사용 */
+  .mobile-scroll-content {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* 모든 modal-footer에 하드웨어 가속 적용 */
+  .modal-footer {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    /* 빠른 트랜지션 설정 */
+    transition: bottom 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    -webkit-transition: bottom 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+}
+
+/* 테이블 행 및 셀 터치 상태 완전 제거 */
+tr, td, th {
+  -webkit-tap-highlight-color: transparent !important;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+tr:focus,
+tr:active,
+tr[data-state="selected"],
+td:focus,
+td:active,
+td:hover,
+th:focus,
+th:active,
+th:hover {
+  background-color: transparent !important;
+  background: transparent !important;
+  outline: none !important;
+}
+
+/* 모바일에서 테이블 전체 터치 효과 제거 */
+@media (hover: none) and (pointer: coarse) {
+  table, tbody, thead, tr, td, th {
+    -webkit-tap-highlight-color: transparent !important;
+  }
+  
+  tr:hover,
+  td:hover,
+  th:hover,
+  tr:active,
+  td:active,
+  th:active,
+  tr:focus,
+  td:focus,
+  th:focus {
+    background-color: transparent !important;
+    background: transparent !important;
+  }
+}
+
+/* 반응형 헬퍼 클래스 */
+.hide-on-mobile {
+  @apply hidden md:block;
+}
+
+.show-on-mobile {
+  @apply block md:hidden;
+}
+
+/* 글래스모피즘 효과 */
+.glass {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* 그라데이션 버튼 */
+.gradient-button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  transition: all 0.3s ease;
+}
+
+.gradient-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 640px) {
+  .dashboard-table th, 
+  .dashboard-table td {
+    @apply px-3 py-2;
+  }
+  
+  .dashboard-table th:nth-child(4),
+  .dashboard-table td:nth-child(4),
+  .dashboard-table th:nth-child(5),
+  .dashboard-table td:nth-child(5),
+  .dashboard-table th:nth-child(7),
+  .dashboard-table td:nth-child(7) {
+    @apply hidden sm:table-cell;
+  }
+}
+
+/* 사이드바 애니메이션 최적화 */
+[data-sidebar] {
+  transition-duration: 50ms !important;
+}
+
+/* 사이드바 토글 시 메인 콘텐츠 움직임 방지 */
+[data-sidebar-inset] {
+  transition: none !important;
+}
+
+/* 사이드바 드롭다운 메뉴 위치 고정 */
+[data-radix-dropdown-menu-content] {
+  position: fixed !important;
+  z-index: 9999 !important;
+}
+
+/* 드롭다운 메뉴로 인한 레이아웃 시프트 방지 */
+[data-radix-dropdown-menu-viewport] {
+  position: fixed !important;
+}

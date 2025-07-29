@@ -1,0 +1,44 @@
+/* Pretendard Fonts */
+@font-face {
+  font-family: 'Pretendard';
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  src: url('/fonts/Pretendard-Regular.otf') format('opentype'),
+       url('/fonts/Pretendard-Regular.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Pretendard';
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+  src: url('/fonts/Pretendard-Medium.otf') format('opentype'),
+       url('/fonts/Pretendard-Medium.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Pretendard';
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+  src: url('/fonts/Pretendard-SemiBold.otf') format('opentype'),
+       url('/fonts/Pretendard-SemiBold.ttf') format('truetype');
+}
+
+/* Codec Pro Fonts */
+@font-face {
+  font-family: 'Codec Pro';
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  src: url('/fonts/Codec-Pro-Regular.otf') format('opentype');
+}
+
+@font-face {
+  font-family: 'Codec Pro';
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  src: url('/fonts/Codec-Pro-Bold.otf') format('opentype');
+}
