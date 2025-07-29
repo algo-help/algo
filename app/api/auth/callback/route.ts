@@ -82,6 +82,13 @@ export async function GET(request: Request) {
 
       // users 테이블에서 사용자 정보 확인 또는 생성
       // RLS 문제를 피하기 위해 바로 admin 클라이언트 사용
+      console.log('🔹 Environment check in OAuth callback:', {
+        hasUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+        hasServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+        urlStart: process.env.NEXT_PUBLIC_SUPABASE_URL?.substring(0, 40),
+        serviceKeyStart: process.env.SUPABASE_SERVICE_ROLE_KEY?.substring(0, 40)
+      });
+      
       let userData: any = null;
       let userError: any = null;
       
