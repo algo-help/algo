@@ -9,10 +9,11 @@ export const createAdminClient = () => {
     throw new Error('Supabase URL이 설정되지 않았습니다.')
   }
 
-  // Service role key가 없으면 anon key 사용 (임시 방편)
-  const key = serviceRoleKey || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  if (!serviceRoleKey) {
+    throw new Error('SUPABASE_SERVICE_ROLE_KEY가 설정되지 않았습니다.')
+  }
   
-  return createClient(supabaseUrl, key, {
+  return createClient(supabaseUrl, serviceRoleKey, {
     auth: {
       autoRefreshToken: false,
       persistSession: false

@@ -105,6 +105,7 @@ export async function GET(request: Request) {
           console.log('🔹 User lookup result (admin client):', { userData, userError, errorCode: userError?.code });
         } catch (adminError) {
           console.error('🔹 Admin client creation failed:', adminError);
+          // admin 클라이언트 생성 실패 시 원래 오류 유지
         }
       }
 
@@ -226,7 +227,8 @@ export async function GET(request: Request) {
             insertError = adminInsertResult.error;
             console.log('🔹 Insert attempt (admin client):', { hasError: !!insertError, errorCode: insertError?.code, errorMessage: insertError?.message });
           } catch (adminError) {
-            // console.error('🔹 Admin client creation failed during insert:', adminError);
+            console.error('🔹 Admin client creation failed during insert:', adminError);
+            insertError = { message: `Admin client error: ${adminError}`, code: 'ADMIN_CLIENT_ERROR' } as any;
           }
         }
           
