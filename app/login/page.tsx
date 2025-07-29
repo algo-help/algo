@@ -1,5 +1,9 @@
 'use client';
 
+// 🔹 페이지 로드 즉시 실행되는 로그
+console.log('🔹 LoginPage module loaded - JavaScript is executing!');
+console.log('🔹 Current time:', new Date().toISOString());
+
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { login } from '../(dashboard)/actions';
@@ -20,7 +24,10 @@ import {
 import { AlertCircle, Loader2, Chrome, ChevronDown, ChevronUp } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
+console.log('🔹 All imports completed successfully');
+
 export default function LoginPage() {
+  console.log('🔹 LoginPage function called - component initializing');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -30,6 +37,9 @@ export default function LoginPage() {
   const searchParams = useSearchParams();
   
   useEffect(() => {
+    console.log('🔹 CRITICAL: useEffect triggered - component mounted!');
+    console.log('🔹 CRITICAL: window object available:', typeof window !== 'undefined');
+    console.log('🔹 CRITICAL: document available:', typeof document !== 'undefined');
     console.log('🔹 LoginPage mounted');
     console.log('🔹 Environment check:', {
       supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -48,6 +58,25 @@ export default function LoginPage() {
         setError('로그인 중 오류가 발생했습니다.');
       }
     }
+    
+    console.log('🔹 CRITICAL: useEffect completed successfully');
+    
+    // 전역 클릭 이벤트 리스너 추가
+    const handleGlobalClick = (e: Event) => {
+      console.log('🔹 CRITICAL: Global click detected!', e.target);
+    };
+    
+    if (typeof window !== 'undefined') {
+      window.addEventListener('click', handleGlobalClick);
+      console.log('🔹 CRITICAL: Global click listener added');
+    }
+    
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('click', handleGlobalClick);
+        console.log('🔹 CRITICAL: Global click listener removed');
+      }
+    };
   }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -117,6 +146,8 @@ export default function LoginPage() {
     }
   };
 
+  console.log('🔹 About to render LoginPage component');
+  
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <Card className="w-full max-w-sm">
@@ -145,8 +176,12 @@ export default function LoginPage() {
             variant="outline"
             className="w-full h-[54px]"
             onClick={(e) => {
-              console.log('🔹 Button onClick triggered!', e);
+              console.log('🔹 CRITICAL: Button onClick triggered!', e);
+              console.log('🔹 CRITICAL: Event type:', e.type);
+              console.log('🔹 CRITICAL: Target element:', e.target);
+              console.log('🔹 CRITICAL: About to call handleGoogleLogin');
               handleGoogleLogin();
+              console.log('🔹 CRITICAL: handleGoogleLogin call completed');
             }}
             disabled={isLoading}
           >
