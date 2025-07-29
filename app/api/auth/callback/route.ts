@@ -81,33 +81,25 @@ export async function GET(request: Request) {
       }
 
       // users 테이블에서 사용자 정보 확인 또는 생성
-      // 먼저 기본 supabase 클라이언트로 시도 (OAuth 세션이 활성화된 상태)
-      let { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('id, email, role, is_active, password_hash, created_at, avatar_url')
-        .eq('email', user.email)
-        .single();
+      // RLS 문제를 피하기 위해 바로 admin 클라이언트 사용
+      let userData: any = null;
+      let userError: any = null;
       
-      console.log('🔹 User lookup result (regular client):', { userData, userError, email: user.email, errorCode: userError?.code });
-      
-      // 사용자 조회 실패 시 admin 클라이언트로 재시도 (RLS, 권한 문제 등)
-      if (userError) {
-        console.log('🔹 Trying with admin client due to RLS restriction...');
-        try {
-          const adminSupabase = createAdminClient();
-          const adminResult = await adminSupabase
-            .from('users')
-            .select('id, email, role, is_active, password_hash, created_at, avatar_url')
-            .eq('email', user.email)
-            .single();
-          userData = adminResult.data;
-          userError = adminResult.error;
-          console.log('🔹 User lookup result (admin client):', { userData, userError, errorCode: userError?.code });
-        } catch (adminError) {
-          console.error('🔹 Admin client creation failed:', adminError);
-          // admin 클라이언트 생성 실패 시 원래 오류 유지
-        }
+      try {
+        const adminSupabase = createAdminClient();
+        const adminResult = await adminSupabase
+          .from('users')
+          .select('id, email, role, is_active, password_hash, created_at, avatar_url')
+          .eq('email', user.email)
+          .single();
+        userData = adminResult.data;
+        userError = adminResult.error;
+      } catch (adminError) {
+        console.error('🔹 Admin client creation failed:', adminError);
+        userError = { message: `Admin client error: ${adminError}`, code: 'ADMIN_CLIENT_ERROR' };
       }
+      
+      console.log('🔹 User lookup result (admin client):', { userData, userError, email: user.email, errorCode: userError?.code });
 
       let role = 'v'; // 기본 역할 (보기전용)
       let isActive = true;
