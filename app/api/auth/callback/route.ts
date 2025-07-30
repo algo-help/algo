@@ -2,9 +2,28 @@ import { createClient } from '@/utils/supabase/server';
 import { createAdminClient } from '@/utils/supabase/admin';
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
+import { createHash } from 'crypto';
 
 // OAuth 콜백은 동적 처리가 필요함
 export const dynamic = 'force-dynamic';
+
+// Google OAuth ID를 일관된 UUID로 변환하는 함수
+function googleIdToUuid(googleId: string): string {
+  // Google ID를 SHA-256으로 해시하고 UUID v4 형식으로 변환
+  const hash = createHash('sha256').update(googleId).digest('hex');
+  
+  // UUID v4 형식으로 변환: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
+  // 첫 번째 32자를 8-4-4-4-12 형식으로 나누고 버전과 variant 비트 설정
+  const uuid = [
+    hash.slice(0, 8),
+    hash.slice(8, 12),
+    '4' + hash.slice(13, 16), // 버전 4 설정
+    ((parseInt(hash.slice(16, 17), 16) & 0x3) | 0x8).toString(16) + hash.slice(17, 20), // variant 설정
+    hash.slice(20, 32)
+  ].join('-');
+  
+  return uuid;
+}
 
 export async function GET(request: Request) {
   const debugInfo: any[] = [];
@@ -76,13 +95,22 @@ export async function GET(request: Request) {
     if (!error && data.session) {
       // Supabase 세션이 성공적으로 생성되었습니다
       const { user } = data.session;
+      
+      // Google OAuth ID를 일관된 UUID로 변환
+      const originalGoogleId = user.id;
+      const convertedUuid = googleIdToUuid(originalGoogleId);
+      
       console.log('🔹 User session created:', { 
         email: user.email, 
-        id: user.id, 
-        idLength: user.id?.length,
-        idType: typeof user.id,
-        isValidUUID: /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(user.id)
+        originalId: originalGoogleId,
+        originalIdLength: originalGoogleId?.length,
+        originalIdType: typeof originalGoogleId,
+        convertedUuid: convertedUuid,
+        isConvertedValidUUID: /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(convertedUuid)
       });
+      
+      // 이후 모든 로직에서 변환된 UUID 사용
+      const userId = convertedUuid;
       
       // 허용된 도메인 확인
       const allowedDomains = ['@algocarelab.com', '@algocare.me'];
@@ -115,11 +143,11 @@ export async function GET(request: Request) {
       try {
         const adminSupabase = createAdminClient();
         
-        // 먼저 auth_id로 검색 시도
+        // 먼저 auth_id로 검색 시도 (변환된 UUID 사용)
         let authIdResult = await adminSupabase
           .from('users')
           .select('id, email, role, is_active, password_hash, created_at, avatar_url, auth_id')
-          .eq('auth_id', user.id)
+          .eq('auth_id', userId)
           .single();
         
         console.log('🔹 Auth ID lookup result:', { hasData: !!authIdResult.data, hasError: !!authIdResult.error, errorCode: authIdResult.error?.code });
@@ -143,13 +171,13 @@ export async function GET(request: Request) {
             // 이메일로 찾았지만 auth_id가 다른 경우 -> 기존 사용자의 auth_id 업데이트
             console.log('🔹 Existing user found by email, updating auth_id:', {
               currentAuthId: emailResult.data.auth_id,
-              newAuthId: user.id,
+              newAuthId: userId,
               email: user.email
             });
             
             const { error: updateError } = await adminSupabase
               .from('users')
-              .update({ auth_id: user.id })
+              .update({ auth_id: userId })
               .eq('id', emailResult.data.id);
             
             if (updateError) {
@@ -159,7 +187,7 @@ export async function GET(request: Request) {
               userError = null;
             } else {
               console.log('🔹 Successfully updated auth_id for existing user');
-              userData = { ...emailResult.data, auth_id: user.id };
+              userData = { ...emailResult.data, auth_id: userId };
               userError = null;
             }
           } else {
@@ -190,7 +218,7 @@ export async function GET(request: Request) {
         });
         
         // ID 불일치 감지 (기존 OAuth 사용자)
-        if (userData.id !== user.id) {
+        if (userData.id !== userId) {
           console.log('🔹 ID mismatch detected! This is a legacy OAuth user.');
           console.log('🔹 Updating user ID to match Auth ID...');
           
@@ -202,7 +230,7 @@ export async function GET(request: Request) {
             const { error: createError } = await adminSupabase
               .from('users')
               .insert({
-                id: user.id,
+                id: userId, // 변환된 UUID 사용
                 email: userData.email,
                 password_hash: userData.password_hash,
                 role: userData.role,
@@ -220,7 +248,7 @@ export async function GET(request: Request) {
               
               if (!deleteError) {
                 // console.log('🔹 Successfully migrated user to new ID');
-                userData.id = user.id; // 이후 로직에서 새 ID 사용
+                userData.id = userId; // 이후 로직에서 새 ID (변환된 UUID) 사용
               } else {
                 // console.error('🔹 Failed to delete old record:', deleteError);
               }
@@ -257,12 +285,14 @@ export async function GET(request: Request) {
         // 새 사용자 - 자동으로 생성 (승인 대기 상태)
         console.log('🔹 New user detected, attempting to create user record');
         console.log('🔹 User data from Google OAuth:', { 
-          id: user.id, 
+          originalId: originalGoogleId, 
+          convertedId: userId,
           email: user.email, 
           provider: 'google',
-          idLength: user.id?.length,
-          idType: typeof user.id,
-          rawId: JSON.stringify(user.id),
+          originalIdLength: originalGoogleId?.length,
+          originalIdType: typeof originalGoogleId,
+          rawOriginalId: JSON.stringify(originalGoogleId),
+          convertedIdIsUUID: /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(userId),
           userMetadata: user.user_metadata,
           appMetadata: user.app_metadata 
         });
@@ -272,15 +302,15 @@ export async function GET(request: Request) {
         const avatarGender = Math.random() > 0.5 ? 'male' : 'female';
         const avatarUrl = `https://api.dicebear.com/7.x/lorelei/svg?seed=${avatarSeed}&gender=${avatarGender}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf`;
         
-        // UUID 형식 검증
+        // UUID 형식 검증 (변환된 UUID 사용)
         const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-        if (!uuidRegex.test(user.id)) {
-          console.error('🔹 Invalid UUID format for user.id:', user.id);
-          return NextResponse.redirect(`${redirectOrigin}/login?error=Invalid user ID format from OAuth provider`);
+        if (!uuidRegex.test(userId)) {
+          console.error('🔹 Invalid UUID format for converted userId:', userId);
+          return NextResponse.redirect(`${redirectOrigin}/login?error=Invalid converted user ID format`);
         }
         
         console.log('🔹 Attempting to insert user with data:', {
-          id: user.id,
+          id: userId,
           email: user.email,
           password_hash: 'oauth_user',
           role: 'v',
@@ -288,11 +318,11 @@ export async function GET(request: Request) {
           avatar_url: avatarUrl
         });
         
-        // 먼저 기본 클라이언트로 시도 - Supabase Auth ID를 그대로 사용
+        // 먼저 기본 클라이언트로 시도 - 변환된 UUID 사용
         let { error: insertError } = await supabase
           .from('users')
           .insert({
-            id: user.id, // Supabase Auth의 UUID를 그대로 사용
+            id: userId, // 변환된 UUID 사용
             email: user.email,
             password_hash: 'oauth_user', // OAuth 사용자는 비밀번호 불필요
             role: 'v',
@@ -310,7 +340,7 @@ export async function GET(request: Request) {
             const adminInsertResult = await adminSupabase
               .from('users')
               .insert({
-                id: user.id, // Supabase Auth의 UUID를 그대로 사용
+                id: userId, // 변환된 UUID 사용
                 email: user.email,
                 password_hash: 'oauth_user',
                 role: 'v',
@@ -338,7 +368,7 @@ export async function GET(request: Request) {
         // console.log('🔹 Setting cookie for new user and redirecting to pending approval');
         const cookieStore = await cookies();
         cookieStore.set('auth-session', JSON.stringify({
-          id: user.id, // 새 사용자는 Auth ID = users 테이블 ID
+          id: userId, // 변환된 UUID 사용
           email: user.email,
           role: 'v',
           authenticated: true,
