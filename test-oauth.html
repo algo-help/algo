@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>OAuth Test</title>
+</head>
+<body>
+    <h1>Google OAuth Test</h1>
+    <p>Click the link below to test Google OAuth manually:</p>
+    
+    <a href="https://icwlbcyamtxrqooerabm.supabase.co/auth/v1/authorize?provider=google&redirect_to=https://algo-dch914uc4-algos-projects-195451d5.vercel.app/api/auth/callback" 
+       target="_blank">
+        Test Google OAuth
+    </a>
+    
+    <h2>What should happen:</h2>
+    <ol>
+        <li>Click the link above</li>
+        <li>Should redirect to Google login</li>
+        <li>After Google login, should redirect back to /api/auth/callback</li>
+        <li>Logs should appear in Vercel</li>
+    </ol>
+    
+    <h2>If you get redirect_uri_mismatch:</h2>
+    <p>Add this URI to Google Cloud Console OAuth settings:</p>
+    <pre>https://icwlbcyamtxrqooerabm.supabase.co/auth/v1/callback</pre>
+</body>
+</html>

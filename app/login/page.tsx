@@ -135,7 +135,22 @@ export default function LoginPage() {
       console.log('🔹 OAuth signInWithOAuth completed');
       console.log('🔹 OAuth data URL (if redirect):', data?.url);
 
-      console.log('🔹 OAuth result:', { data, error });
+      console.log('🔹 OAuth result complete:', { 
+        hasData: !!data, 
+        hasError: !!error,
+        dataUrl: data?.url,
+        errorMessage: error?.message,
+        errorCode: error?.code,
+        fullData: data,
+        fullError: error
+      });
+
+      // data.url이 있으면 리디렉션이 예정됨
+      if (data?.url) {
+        console.log('🔹 Redirecting to:', data.url);
+        window.location.href = data.url;
+        return;
+      }
 
       if (error) {
         console.error('🔹 OAuth error details:', error);
