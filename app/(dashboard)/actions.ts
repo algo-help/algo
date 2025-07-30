@@ -7,169 +7,42 @@ import { redirect } from 'next/navigation';
 import * as bcrypt from 'bcryptjs';
 
 export async function login(formData: FormData) {
-  let email = formData.get('email') as string;
-  const password = formData.get('password') as string;
-
-  // 이메일 형식 검증
-  if (!email.includes('@')) {
-    return { error: '올바른 이메일 형식을 입력해주세요.' };
-  }
-
-  const supabase = await createClient();
-
-  // 데이터베이스에서 사용자 조회
-  const { data: user, error } = await supabase
-    .from('users')
-    .select('id, email, password_hash, role, is_active')
-    .eq('email', email)
-    .single();
-
-  if (error || !user) {
-    return { error: '이메일 또는 비밀번호가 올바르지 않습니다.' };
-  }
-
-  // 계정이 비활성화된 경우
-  if (!user.is_active) {
-    return { error: '계정이 비활성화되었습니다. 관리자에게 문의하세요.' };
-  }
-
-  // 비밀번호 검증
-  const isValidPassword = await bcrypt.compare(password, user.password_hash);
-
-  if (!isValidPassword) {
-    return { error: '이메일 또는 비밀번호가 올바르지 않습니다.' };
-  }
-
-  // 간단한 세션 쿠키 설정 (역할 포함)
-  const cookieStore = await cookies();
-  cookieStore.set('auth-session', JSON.stringify({ 
-    id: user.id,
-    email: user.email, 
-    role: user.role,
-    authenticated: true,
-    is_active: user.is_active
-  }), {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 60 * 60 * 24 * 7 // 7일
-  });
-
-  revalidatePath('/');
-  return { success: true };
+  // 로그인 기능 비활성화 - 홈으로 리다이렉트
+  redirect('/');
 }
 
 export async function checkUserStatus() {
-  const cookieStore = await cookies();
-  const sessionCookie = cookieStore.get('auth-session');
-  
-  if (!sessionCookie) {
-    return { error: '세션이 없습니다.' };
-  }
-
-  try {
-    const session = JSON.parse(sessionCookie.value);
-    const supabase = await createClient();
-
-    // 데이터베이스에서 최신 사용자 정보 조회
-    let user;
-    let error;
-    
-    if (!session.id) {
-      return { error: '유효한 세션 정보가 없습니다.' };
+  // 로그인 제거 - 항상 성공적인 사용자 상태 반환
+  return { 
+    success: true, 
+    user: {
+      id: 'default-user-id',
+      email: 'jeff@algocarelab.com',
+      role: 'admin',
+      is_active: true
     }
-    const result = await supabase
-      .from('users')
-      .select('id, email, role, is_active')
-      .eq('id', session.id)
-      .single();
-    user = result.data;
-    error = result.error;
-    
-
-    if (error || !user) {
-      return { error: '사용자 정보를 찾을 수 없습니다.' };
-    }
-
-    // 권한이 변경되었거나 ID가 다른 경우 쿠키 업데이트
-    if (session.role !== user.role || session.is_active !== user.is_active || session.id !== user.id) {
-      // auth_type 유지 (OAuth 사용자인 경우)
-      const authType = session.auth_type || undefined;
-      
-      cookieStore.set('auth-session', JSON.stringify({ 
-        id: user.id, // users 테이블의 실제 ID 사용
-        email: user.email, 
-        role: user.role,
-        authenticated: true,
-        is_active: user.is_active,
-        ...(authType && { auth_type: authType })
-      }), {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 60 * 60 * 24 * 7 // 7일
-      });
-    }
-
-    return { 
-      success: true, 
-      user: {
-        is_active: user.is_active,
-        role: user.role
-      }
-    };
-  } catch (error) {
-    // console.error('checkUserStatus error:', error);
-    return { error: '상태 확인 중 오류가 발생했습니다.' };
-  }
+  };
 }
 
 export async function logout() {
-  const cookieStore = await cookies();
-  const sessionCookie = cookieStore.get('auth-session');
-  
-  // OAuth 세션인 경우 Supabase 로그아웃도 처리
-  if (sessionCookie) {
-    try {
-      const session = JSON.parse(sessionCookie.value);
-      if (session.auth_type === 'oauth') {
-        const supabase = await createClient();
-        await supabase.auth.signOut();
-      }
-    } catch (error) {
-      // console.error('Error parsing session:', error);
-    }
-  }
-  
-  cookieStore.delete('auth-session');
-  
-  // 페이지 재검증으로 세션 상태 업데이트
-  revalidatePath('/');
-  revalidatePath('/login');
-  
-  redirect('/login');
+  // 로그아웃 기능 비활성화
+  redirect('/');
 }
 
 export async function getSession() {
-  const cookieStore = await cookies();
-  const session = cookieStore.get('auth-session');
-  
-  if (!session) {
-    return null;
-  }
-
-  try {
-    return JSON.parse(session.value);
-  } catch {
-    return null;
-  }
+  // 로그인 제거 - 항상 기본 세션 반환
+  return {
+    id: 'default-user-id',
+    email: 'jeff@algocarelab.com',
+    role: 'admin',
+    authenticated: true,
+    is_active: true
+  };
 }
 
 export async function addDelivery(formData: FormData) {
   const session = await getSession();
-  if (!session) {
-    throw new Error('Unauthorized');
-  }
+  // 로그인 체크 제거 - 항상 통과
 
   // 최신 권한 확인
   const statusResult = await checkUserStatus();

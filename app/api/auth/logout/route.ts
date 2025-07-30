@@ -1,16 +1,6 @@
-import { createClient } from '@/utils/supabase/server';
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 
 export async function POST() {
-  const supabase = await createClient();
-  const cookieStore = await cookies();
-  
-  // Supabase 로그아웃
-  await supabase.auth.signOut();
-  
-  // 세션 쿠키 삭제
-  cookieStore.delete('auth-session');
-  
+  // 로그아웃 기능 비활성화 - 성공 응답만 반환
   return NextResponse.json({ success: true });
 }

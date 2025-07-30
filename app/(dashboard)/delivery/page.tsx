@@ -579,14 +579,6 @@ export default function Home() {
     try {
       const result = await checkUserStatus();
       
-      if (result.error) {
-        toast.error('세션이 만료되었습니다.', {
-          description: '다시 로그인해주세요.'
-        });
-        router.push('/login');
-        return;
-      }
-      
       if (result.success && result.user) {
         // 권한이 변경된 경우 세션 업데이트됨
         if (result.user.role === 'v') {
@@ -722,14 +714,6 @@ export default function Home() {
     try {
       const result = await checkUserStatus();
       
-      if (result.error) {
-        toast.error('세션이 만료되었습니다.', {
-          description: '다시 로그인해주세요.'
-        });
-        router.push('/login');
-        return;
-      }
-      
       if (result.success && result.user) {
         // 권한이 변경된 경우 세션 업데이트됨
         if (result.user.role === 'v') {
@@ -754,14 +738,6 @@ export default function Home() {
     // 최신 권한 확인
     try {
       const result = await checkUserStatus();
-      
-      if (result.error) {
-        toast.error('세션이 만료되었습니다.', {
-          description: '다시 로그인해주세요.'
-        });
-        router.push('/login');
-        return;
-      }
       
       if (result.success && result.user) {
         // 권한이 변경된 경우 세션 업데이트됨

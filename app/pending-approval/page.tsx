@@ -41,10 +41,6 @@ export default function PendingApprovalPage() {
         // 사용자가 활성화되었으면 홈으로 리다이렉트
         router.push('/');
         router.refresh();
-      } else if (result.error) {
-        // console.error('상태 확인 오류:', result.error);
-        // 오류가 발생하면 페이지 새로고침으로 폴백
-        window.location.reload();
       } else {
         // 아직 활성화되지 않았으면 현재 페이지 유지
         // console.log('아직 승인 대기 중입니다.');

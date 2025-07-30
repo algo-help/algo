@@ -1,11 +1,10 @@
 "use client"
 
 import React, { useState, useEffect, useCallback, useMemo } from "react"
-import { Package, Users, Home, LogOut, ChevronsUpDown, User, Settings, Shield, Clock, DollarSign, CreditCard } from "lucide-react"
+import { Package, Users, Home, Shield, Clock, DollarSign, CreditCard } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -13,19 +12,9 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { useRouter, usePathname } from "next/navigation"
-import { logout } from "@/app/(dashboard)/actions"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { supabase } from "@/utils/supabase"
 
@@ -99,15 +88,6 @@ export function AppSidebar({ userEmail, userRole, isDemoAccount, avatarUrl }: Ap
     }
   }
 
-  const handleLogout = useCallback(async () => {
-    try {
-      await logout()
-      window.location.href = '/login'
-    } catch (error) {
-      // console.error('로그아웃 오류:', error)
-      window.location.href = '/login'
-    }
-  }, [])
 
   const handleNavigation = useCallback((href: string) => {
     router.push(href)
@@ -117,15 +97,6 @@ export function AppSidebar({ userEmail, userRole, isDemoAccount, avatarUrl }: Ap
     }
   }, [router, isMobile, setOpenMobile])
 
-  // 사용자명 추출 - memoized
-  const displayName = useMemo(() => {
-    if (isDemoAccount) return 'Testviewtest'
-    if (!userEmail) return ''
-    const username = userEmail.split('@')[0]
-    return username.charAt(0).toUpperCase() + username.slice(1)
-  }, [isDemoAccount, userEmail])
-
-  const displayEmail = isDemoAccount ? 'testviewtest@algocarelab.com' : userEmail
 
   // Admin menu items - memoized
   const adminMenuItems = useMemo(() => [
@@ -208,24 +179,7 @@ export function AppSidebar({ userEmail, userRole, isDemoAccount, avatarUrl }: Ap
       </SidebarHeader>
       
       <SidebarContent>
-        {/* 관리자 메뉴 */}
-        {userRole === 'admin' && (
-          <SidebarGroup>
-            <SidebarGroupLabel>관리자 메뉴</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {visibleAdminItems.map((item) => (
-                  <MenuItemComponent
-                    key={item.href}
-                    item={item}
-                    pathname={pathname}
-                    handleNavigation={handleNavigation}
-                  />
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        )}
+        {/* 관리자 메뉴 - 로그인 기능 제거로 숨김 */}
         
         {/* 메인 메뉴 */}
         <SidebarGroup>
@@ -248,62 +202,6 @@ export function AppSidebar({ userEmail, userRole, isDemoAccount, avatarUrl }: Ap
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      
-      <SidebarFooter className="border-t">
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <DropdownMenu modal={false}>
-              <DropdownMenuTrigger asChild>
-                <SidebarMenuButton
-                  size="lg"
-                  className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground focus:ring-0 focus:ring-offset-0 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                >
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={avatarUrl || undefined} />
-                    <AvatarFallback className="bg-primary text-xs font-medium text-primary-foreground">
-                      {displayName.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex flex-col gap-0.5 text-left">
-                    <span className="truncate font-semibold">{displayName}</span>
-                    <span className="truncate text-xs text-muted-foreground">
-                      {userRole === 'admin' ? '관리자' : userRole === 'rw' ? '사용자' : '보기전용'}
-                    </span>
-                  </div>
-                  <ChevronsUpDown className="ml-auto size-4" />
-                </SidebarMenuButton>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                className="w-[--radix-dropdown-menu-trigger-width] min-w-[220px]"
-                side="top"
-                align="start"
-                sideOffset={4}
-              >
-                <DropdownMenuItem disabled>
-                  <span className="text-sm">{displayEmail}</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem 
-                  onClick={() => {
-                    // 포커스 제거
-                    if (document.activeElement instanceof HTMLElement) {
-                      document.activeElement.blur();
-                    }
-                    handleNavigation('/profile');
-                  }}
-                >
-                  <User className="mr-2 h-4 w-4" />
-                  <span>내 정보</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleLogout}>
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>로그아웃</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
     </Sidebar>
   )
 }
