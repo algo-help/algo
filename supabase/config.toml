@@ -271,8 +271,7 @@ client_id = "901868190944-gpe9nuorgv6c1478svmja8ndfqgheo7d.apps.googleuserconten
 # DO NOT commit your OAuth provider secret to git. Use environment variable substitution instead:
 secret = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET)"
 # Overrides the default auth redirectUrl.
-# redirect_uri를 제거하여 Supabase가 자동으로 올바른 콜백 URL을 사용하도록 함
-# redirect_uri = "https://icwlbcyamtxrqooerabm.supabase.co/auth/v1/callback"
+redirect_uri = "https://icwlbcyamtxrqooerabm.supabase.co/auth/v1/callback"
 # If enabled, the nonce check will be skipped. Required for local sign in with Google auth.
 skip_nonce_check = false
 
