@@ -76,7 +76,13 @@ export async function GET(request: Request) {
     if (!error && data.session) {
       // Supabase 세션이 성공적으로 생성되었습니다
       const { user } = data.session;
-      // console.log('🔹 User session created:', { email: user.email, id: user.id });
+      console.log('🔹 User session created:', { 
+        email: user.email, 
+        id: user.id, 
+        idLength: user.id?.length,
+        idType: typeof user.id,
+        isValidUUID: /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(user.id)
+      });
       
       // 허용된 도메인 확인
       const allowedDomains = ['@algocarelab.com', '@algocare.me'];
@@ -254,6 +260,9 @@ export async function GET(request: Request) {
           id: user.id, 
           email: user.email, 
           provider: 'google',
+          idLength: user.id?.length,
+          idType: typeof user.id,
+          rawId: JSON.stringify(user.id),
           userMetadata: user.user_metadata,
           appMetadata: user.app_metadata 
         });
