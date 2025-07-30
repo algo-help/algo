@@ -133,8 +133,32 @@ export async function GET(request: Request) {
           
           console.log('🔹 Email lookup result:', { hasData: !!emailResult.data, hasError: !!emailResult.error, errorCode: emailResult.error?.code });
           
-          userData = emailResult.data;
-          userError = emailResult.error;
+          if (emailResult.data && !emailResult.error) {
+            // 이메일로 찾았지만 auth_id가 다른 경우 -> 기존 사용자의 auth_id 업데이트
+            console.log('🔹 Existing user found by email, updating auth_id:', {
+              currentAuthId: emailResult.data.auth_id,
+              newAuthId: user.id,
+              email: user.email
+            });
+            
+            const { error: updateError } = await adminSupabase
+              .from('users')
+              .update({ auth_id: user.id })
+              .eq('id', emailResult.data.id);
+            
+            if (updateError) {
+              console.error('🔹 Failed to update auth_id:', updateError);
+              userData = emailResult.data; // 업데이트 실패해도 기존 데이터 사용
+              userError = null;
+            } else {
+              console.log('🔹 Successfully updated auth_id for existing user');
+              userData = { ...emailResult.data, auth_id: user.id };
+              userError = null;
+            }
+          } else {
+            userData = emailResult.data;
+            userError = emailResult.error;
+          }
         }
       } catch (adminError) {
         console.error('🔹 Admin client creation failed:', adminError);
