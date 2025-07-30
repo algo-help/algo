@@ -148,7 +148,8 @@ export async function GET(request: Request) {
             
             if (updateError) {
               console.error('🔹 Failed to update auth_id:', updateError);
-              userData = emailResult.data; // 업데이트 실패해도 기존 데이터 사용
+              // 업데이트 실패해도 기존 데이터 사용 (중요: 로그인 계속 진행)
+              userData = emailResult.data;
               userError = null;
             } else {
               console.log('🔹 Successfully updated auth_id for existing user');
@@ -156,7 +157,9 @@ export async function GET(request: Request) {
               userError = null;
             }
           } else {
-            userData = emailResult.data;
+            // 이메일로도 찾지 못한 경우만 새 사용자 생성으로 진입
+            console.log('🔹 User not found by email, will create new user');
+            userData = null;
             userError = emailResult.error;
           }
         }
@@ -259,6 +262,13 @@ export async function GET(request: Request) {
         const avatarSeed = Math.random().toString(36).substring(2, 15);
         const avatarGender = Math.random() > 0.5 ? 'male' : 'female';
         const avatarUrl = `https://api.dicebear.com/7.x/lorelei/svg?seed=${avatarSeed}&gender=${avatarGender}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf`;
+        
+        // UUID 형식 검증
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+        if (!uuidRegex.test(user.id)) {
+          console.error('🔹 Invalid UUID format for user.id:', user.id);
+          return NextResponse.redirect(`${redirectOrigin}/login?error=Invalid user ID format from OAuth provider`);
+        }
         
         console.log('🔹 Attempting to insert user with data:', {
           id: user.id,
