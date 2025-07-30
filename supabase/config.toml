@@ -117,11 +117,11 @@ file_size_limit = "50MiB"
 enabled = true
 # The base URL of your website. Used as an allow-list for redirects and for constructing URLs used
 # in emails.
-site_url = "https://algo-pfjfcnxvm-algos-projects-195451d5.vercel.app"
+site_url = "https://algo-topaz.vercel.app"
 # A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
 additional_redirect_urls = [
-  "https://algo-pfjfcnxvm-algos-projects-195451d5.vercel.app/api/auth/callback",
   "https://algo-topaz.vercel.app/api/auth/callback",
+  "https://*.vercel.app/api/auth/callback",
   "http://localhost:3000/api/auth/callback",
   "http://127.0.0.1:3000/api/auth/callback"
 ]
@@ -271,7 +271,8 @@ client_id = "901868190944-gpe9nuorgv6c1478svmja8ndfqgheo7d.apps.googleuserconten
 # DO NOT commit your OAuth provider secret to git. Use environment variable substitution instead:
 secret = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET)"
 # Overrides the default auth redirectUrl.
-redirect_uri = "https://icwlbcyamtxrqooerabm.supabase.co/auth/v1/callback"
+# redirect_uri를 제거하여 Supabase가 자동으로 올바른 콜백 URL을 사용하도록 함
+# redirect_uri = "https://icwlbcyamtxrqooerabm.supabase.co/auth/v1/callback"
 # If enabled, the nonce check will be skipped. Required for local sign in with Google auth.
 skip_nonce_check = false
 

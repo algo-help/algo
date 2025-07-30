@@ -12,7 +12,27 @@ export async function GET(request: Request) {
   
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get('code');
-  const origin = 'https://algo-topaz.vercel.app'; // 하드코딩으로 고정
+  const error = requestUrl.searchParams.get('error');
+  const errorDescription = requestUrl.searchParams.get('error_description');
+  
+  // OAuth 에러 체크
+  if (error) {
+    console.error('🔹 OAuth error:', error, errorDescription);
+  }
+  
+  // 동적 origin 처리 - Vercel 배포 URL 지원
+  const origin = requestUrl.origin.includes('localhost') || requestUrl.origin.includes('127.0.0.1')
+    ? requestUrl.origin
+    : process.env.NEXT_PUBLIC_APP_URL || 'https://algo-topaz.vercel.app';
+  
+  console.log('🔹 Request details:', {
+    fullUrl: request.url,
+    origin: requestUrl.origin,
+    calculatedOrigin: origin,
+    code: !!code,
+    error,
+    errorDescription
+  });
   
   console.log('🔹 Code found:', !!code);
 
