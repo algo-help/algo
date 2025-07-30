@@ -32,8 +32,8 @@ export async function GET(request: Request) {
   // 프로덕션 환경에서 올바른 도메인 사용 확인
   let redirectOrigin = origin;
   if (isProduction && isVercel) {
-    // Vercel 배포 환경에서는 현재 배포된 도메인 사용 (algo-topaz.vercel.app은 custom domain)
-    redirectOrigin = 'https://algo-topaz.vercel.app';
+    // Vercel 배포 환경에서는 현재 요청의 origin을 그대로 사용
+    redirectOrigin = origin;
   }
   
   console.log('🔹 Redirect Origin Decision:', {
