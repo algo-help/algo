@@ -10,6 +10,9 @@ export async function GET(request: Request) {
   const debugInfo: any[] = [];
   debugInfo.push('🔹 OAuth callback started');
   console.log('🔹 OAuth callback started');
+  console.log('🔹 Full request URL:', request.url);
+  console.log('🔹 Request method:', request.method);
+  console.log('🔹 Request headers:', Object.fromEntries(request.headers.entries()));
   
   // Dynamic server usage를 피하기 위해 headers 사용
   const host = request.headers.get('host');
@@ -29,9 +32,17 @@ export async function GET(request: Request) {
   // 프로덕션 환경에서 올바른 도메인 사용 확인
   let redirectOrigin = origin;
   if (isProduction && isVercel) {
-    // Vercel 배포 환경에서는 https://algo-topaz.vercel.app 사용
+    // Vercel 배포 환경에서는 현재 배포된 도메인 사용 (algo-topaz.vercel.app은 custom domain)
     redirectOrigin = 'https://algo-topaz.vercel.app';
   }
+  
+  console.log('🔹 Redirect Origin Decision:', {
+    origin,
+    redirectOrigin,
+    isProduction,
+    isVercel,
+    host: request.headers.get('host')
+  });
   
   // console.log('🔹 OAuth callback - Origin:', origin, 'Redirect Origin:', redirectOrigin, 'Is Production:', isProduction);
 
@@ -86,7 +97,10 @@ export async function GET(request: Request) {
         hasUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
         hasServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
         urlStart: process.env.NEXT_PUBLIC_SUPABASE_URL?.substring(0, 40),
-        serviceKeyStart: process.env.SUPABASE_SERVICE_ROLE_KEY?.substring(0, 40)
+        serviceKeyStart: process.env.SUPABASE_SERVICE_ROLE_KEY?.substring(0, 40),
+        fullUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
+        nodeEnv: process.env.NODE_ENV,
+        vercel: process.env.VERCEL
       });
       
       let userData: any = null;

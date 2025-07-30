@@ -116,6 +116,7 @@ export default function LoginPage() {
       
       console.log('🔹 Starting Google OAuth login...');
       console.log('🔹 Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
+      console.log('🔹 Window origin:', window.location.origin);
       console.log('🔹 Redirect URL:', `${window.location.origin}/api/auth/callback`);
       
       // 클라이언트 사이드에서 직접 OAuth 처리
@@ -130,6 +131,9 @@ export default function LoginPage() {
           }
         }
       });
+      
+      console.log('🔹 OAuth signInWithOAuth completed');
+      console.log('🔹 OAuth data URL (if redirect):', data?.url);
 
       console.log('🔹 OAuth result:', { data, error });
 
