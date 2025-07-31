@@ -65,22 +65,21 @@ export function generateBusinessCardPreview(formData: ContactInfo, showPrintGuid
   const nameText = formData.name.replace(' 프로', '')
   const hasPro = formData.name.includes('프로')
   
-  // 이름 (자간 0.75 적용)
-  svgPaths += `<text x="${x * svgScale}" y="${svgNameY * svgScale}" 
-    font-family="'Pretendard', -apple-system, sans-serif" 
-    font-size="${10 * svgScale}" 
-    font-weight="600" 
-    fill="#231f20" 
-    letter-spacing="0.75">${nameText}</text>`
-  
+  // 이름과 프로를 함께 렌더링
   if (hasPro) {
-    // "프로" 텍스트 (이름 너비 계산은 대략적으로)
-    const nameWidth = nameText.length * 8 // 대략적인 계산
-    svgPaths += `<text x="${(x + nameWidth + 3.8) * svgScale}" y="${(svgNameY + 0.7) * svgScale}" 
+    svgPaths += `<text x="${x * svgScale}" y="${svgNameY * svgScale}" 
       font-family="'Pretendard', -apple-system, sans-serif" 
-      font-size="${7.5 * svgScale}" 
-      font-weight="500" 
-      fill="#231f20">프로</text>`
+      font-size="${10 * svgScale}" 
+      font-weight="600" 
+      fill="#231f20" 
+      letter-spacing="0.75">${nameText}<tspan dx="${1.5 * svgScale}" dy="${0.7 * svgScale}" font-size="${7.5 * svgScale}" font-weight="500" letter-spacing="0"> 프로</tspan></text>`
+  } else {
+    svgPaths += `<text x="${x * svgScale}" y="${svgNameY * svgScale}" 
+      font-family="'Pretendard', -apple-system, sans-serif" 
+      font-size="${10 * svgScale}" 
+      font-weight="600" 
+      fill="#231f20" 
+      letter-spacing="0.75">${nameText}</text>`
   }
   
   // 직책
