@@ -1,4 +1,4 @@
-import { createClient } from '@/utils/supabase/server'
+// import { createClient } from '@/utils/supabase/server' // 인증 제거로 불필요
 import { NextRequest, NextResponse } from 'next/server'
 import { PDFDocument, rgb, PDFPage } from 'pdf-lib'
 import { readFile } from 'fs/promises'
@@ -79,16 +79,7 @@ export async function POST(request: NextRequest) {
   console.log('=== 명함 생성 API 시작 (벡터 패스 버전) ===')
   
   try {
-    const supabase = await createClient()
-    
-    // 사용자 인증 확인
-    console.log('1. 사용자 인증 확인 중...')
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      console.error('인증 실패:', authError)
-      return NextResponse.json({ error: '인증이 필요합니다' }, { status: 401 })
-    }
-    console.log('인증 성공, 사용자 ID:', user.id)
+    // 인증 체크 제거 - 로그인 기능이 제거됨
 
     // 요청 데이터 파싱
     console.log('2. 요청 데이터 파싱 중...')
