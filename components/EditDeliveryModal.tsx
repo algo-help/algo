@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { updateDelivery } from '@/app/(dashboard)/actions';
+import { updateDelivery, deleteDelivery } from '@/app/(dashboard)/actions';
 import { SupplementDelivery } from '@/utils/supabase';
 import {
   Dialog,
@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Badge } from "@/components/ui/badge";
-import { AlertCircle, X, Edit3, CalendarDays, Hash, Truck, UserCheck } from "lucide-react";
+import { AlertCircle, X, Edit3, CalendarDays, Hash, Truck, UserCheck, Trash2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
@@ -23,6 +23,17 @@ import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { toast } from 'sonner';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface EditDeliveryModalProps {
   isOpen: boolean;
@@ -56,6 +67,8 @@ const EditDeliveryModal = React.memo(({ isOpen, delivery, onClose, onSuccess }: 
   const [isDelivered, setIsDelivered] = useState(false);
   const [deliveryDate, setDeliveryDate] = useState<Date | undefined>(undefined);
   const [customerRequest, setCustomerRequest] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
 
   // 날짜를 YYYY-MM-DD 형식으로 변환하는 함수
@@ -238,6 +251,25 @@ const EditDeliveryModal = React.memo(({ isOpen, delivery, onClose, onSuccess }: 
       setError(err instanceof Error ? err.message : '배송 정보 수정에 실패했습니다.');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!delivery) return;
+    
+    setIsDeleting(true);
+    try {
+      await deleteDelivery(delivery.id);
+      toast.success('배송 정보가 삭제되었습니다.');
+      onSuccess();
+      onClose();
+    } catch (error) {
+      toast.error('삭제 중 오류가 발생했습니다.', {
+        description: error instanceof Error ? error.message : '다시 시도해주세요.'
+      });
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
     }
   };
 
@@ -494,21 +526,30 @@ const EditDeliveryModal = React.memo(({ isOpen, delivery, onClose, onSuccess }: 
           
           <Separator />
           
-          <div className="flex justify-end items-center px-6 py-4 modal-footer">
-            <div className="flex space-x-2 sm:space-x-3 w-full sm:w-auto">
+          <div className="flex justify-between items-center px-6 py-4 modal-footer">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setShowDeleteConfirm(true)}
+              disabled={isSubmitting || isDeleting}
+              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+            <div className="flex space-x-2 sm:space-x-3">
               <Button
                 type="button"
                 variant="outline"
                 onClick={onClose}
-                disabled={isSubmitting}
-                className="flex-1 sm:flex-none min-w-[80px]"
+                disabled={isSubmitting || isDeleting}
+                className="min-w-[80px]"
               >
                 취소
               </Button>
               <Button
                 type="submit"
-                disabled={isSubmitting || !selectedSupplement}
-                className="flex-1 sm:flex-none min-w-[100px] relative bg-blue-600 hover:bg-blue-700"
+                disabled={isSubmitting || isDeleting || !selectedSupplement}
+                className="min-w-[100px] relative bg-blue-600 hover:bg-blue-700"
               >
                 {isSubmitting ? (
                   <div className="flex items-center gap-2">
@@ -526,6 +567,35 @@ const EditDeliveryModal = React.memo(({ isOpen, delivery, onClose, onSuccess }: 
           </div>
         </form>
       </DialogContent>
+      
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>배송 정보 삭제</AlertDialogTitle>
+            <AlertDialogDescription>
+              정말로 이 배송 정보를 삭제하시겠습니까?<br />
+              <span className="font-medium">{delivery.recipient_name}</span>님의 <span className="font-medium">{delivery.supplement_type}</span> 배송 정보가 영구적으로 삭제됩니다.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>취소</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? (
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  삭제 중...
+                </div>
+              ) : (
+                '삭제'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 });
